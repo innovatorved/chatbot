@@ -11,6 +11,8 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
+      console.log('[AUTH_CONFIG_AUTHORIZED_CALLBACK] Pathname:', nextUrl.pathname);
+      console.log('[AUTH_CONFIG_AUTHORIZED_CALLBACK] Auth object:', JSON.stringify(auth, null, 2));
       const isLoggedIn = !!auth?.user;
       const isOnRoot = nextUrl.pathname === '/';
       const isOnChat = nextUrl.pathname.startsWith('/chat') || nextUrl.pathname.match(/^\/[a-zA-Z0-9_-]{20,}/); // Matches root paths that look like chat IDs

@@ -10,6 +10,7 @@ export default async function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  console.log('[ADMIN_LAYOUT] Session object:', JSON.stringify(session, null, 2));
 
   // The session.user type should have isAdmin from the auth.ts setup
   // Using `as any` for now as a safeguard if type propagation isn't perfect.

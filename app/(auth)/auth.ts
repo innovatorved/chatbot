@@ -46,6 +46,7 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.log('[JWT_CALLBACK] User object received:', JSON.stringify(user, null, 2));
         // User object is the one returned from authorize
         const dbUser = user as DbUser; // Cast to DbUser which has id, email, isAdmin
         token.id = dbUser.id;
