@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gte, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, count } from 'drizzle-orm'; // Added count
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -23,12 +23,35 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function createUser(email: string, password: string) {
+export async function getAllUsers(): Promise<Array<Pick<User, 'id' | 'email' | 'isAdmin'>>> {
+  try {
+    return await db.select({
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    }).from(user);
+  } catch (error) {
+    console.error('Failed to get all users from database');
+    throw error;
+  }
+}
+
+export async function countUsers(): Promise<number> {
+  try {
+    const result = await db.select({ value: count() }).from(user);
+    return result[0]?.value || 0;
+  } catch (error) {
+    console.error('Failed to count users from database');
+    throw error;
+  }
+}
+
+export async function createUser(email: string, password: string, isAdmin: boolean = false) {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    return await db.insert(user).values({ email, password: hash, isAdmin });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -78,6 +101,43 @@ export async function getChatsByUserId({ id }: { id: string }) {
       .orderBy(desc(chat.createdAt));
   } catch (error) {
     console.error('Failed to get chats by user from database');
+    throw error;
+  }
+}
+
+export type ChatWithMessages = import('./schema').Chat & { messages: import('./schema').DBMessage[] };
+
+export async function getChatsAndMessagesByUserId(userId: string): Promise<ChatWithMessages[]> {
+  try {
+    // 1. Fetch all chats for the user
+    const userChats = await db
+      .select()
+      .from(chat)
+      .where(eq(chat.userId, userId))
+      .orderBy(desc(chat.createdAt));
+
+    if (userChats.length === 0) {
+      return [];
+    }
+
+    // 2. For each chat, fetch its messages
+    const chatsWithMessages: ChatWithMessages[] = [];
+    for (const userChat of userChats) {
+      const chatMessages = await db
+        .select()
+        .from(message)
+        .where(eq(message.chatId, userChat.id))
+        .orderBy(asc(message.createdAt));
+
+      chatsWithMessages.push({
+        ...userChat,
+        messages: chatMessages,
+      });
+    }
+
+    return chatsWithMessages;
+  } catch (error) {
+    console.error('Failed to get chats and messages by user ID from database:', error);
     throw error;
   }
 }

@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { v4 as generateRandomUUID } from 'uuid';
 
-import { createUser, getUser } from '@/lib/db/queries';
+import { createUser, getUser, countUsers } from '@/lib/db/queries'; // Added countUsers
 
 import { signIn } from './auth';
 import { validateTurnstileToken } from 'next-turnstile';
@@ -96,7 +96,12 @@ export const register = async (
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
+
+    // Check if this is the first user
+    const totalUsers = await countUsers();
+    const isAdmin = totalUsers === 0;
+
+    await createUser(validatedData.email, validatedData.password, isAdmin);
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
