@@ -10,7 +10,10 @@ export default async function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  console.log('[ADMIN_LAYOUT] Session object:', JSON.stringify(session, null, 2));
+  console.log(
+    '[ADMIN_LAYOUT] Session object:',
+    JSON.stringify(session, null, 2),
+  );
 
   // The session.user type should have isAdmin from the auth.ts setup
   // Using `as any` for now as a safeguard if type propagation isn't perfect.
@@ -24,7 +27,10 @@ export default async function AdminDashboardLayout({
         <aside className="w-60 flex-shrink-0 border-r bg-muted/40 p-4">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-              <Link href="/admin/dashboard/users" className="flex items-center gap-2 font-semibold">
+              <Link
+                href="/admin/dashboard/users"
+                className="flex items-center gap-2 font-semibold"
+              >
                 <span className="">Admin Panel</span>
               </Link>
             </div>
@@ -53,9 +59,7 @@ export default async function AdminDashboardLayout({
             </nav>
           </div>
         </aside>
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-6 overflow-auto">{children}</main>
       </div>
       <Toaster />
     </ThemeProvider>

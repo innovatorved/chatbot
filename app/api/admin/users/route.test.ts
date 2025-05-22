@@ -79,16 +79,18 @@ describe('API Route: /api/admin/users', () => {
     });
 
     test('Test Case 4: Admin Authenticated Access - Database Error - should return 500', async () => {
-        (auth as jest.Mock).mockResolvedValue({
-          user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
-        });
-        (getAllUsers as jest.Mock).mockRejectedValue(new Error('Database query failed'));
-  
-        const response = await callGetHandler();
-        const jsonResponse = await response.json();
-  
-        expect(response.status).toBe(500);
-        expect(jsonResponse.error).toBe('Internal Server Error');
+      (auth as jest.Mock).mockResolvedValue({
+        user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
       });
+      (getAllUsers as jest.Mock).mockRejectedValue(
+        new Error('Database query failed'),
+      );
+
+      const response = await callGetHandler();
+      const jsonResponse = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(jsonResponse.error).toBe('Internal Server Error');
+    });
   });
 });

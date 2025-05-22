@@ -33,7 +33,9 @@ export default function AdminUsersPage() {
         const response = await fetch('/api/admin/users');
         if (!response.ok) {
           if (response.status === 403) {
-            throw new Error('Forbidden: You do not have access to this resource.');
+            throw new Error(
+              'Forbidden: You do not have access to this resource.',
+            );
           }
           throw new Error(`Failed to fetch users: ${response.statusText}`);
         }

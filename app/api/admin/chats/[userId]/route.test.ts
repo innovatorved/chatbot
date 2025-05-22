@@ -51,7 +51,11 @@ describe('API Route: /api/admin/chats/[userId]', () => {
 
     test('Test Case 2: Non-Admin Authenticated Access - should return 403', async () => {
       (auth as jest.Mock).mockResolvedValue({
-        user: { id: 'non-admin-user', email: 'user@example.com', isAdmin: false },
+        user: {
+          id: 'non-admin-user',
+          email: 'user@example.com',
+          isAdmin: false,
+        },
       });
 
       const response = await callGetHandlerWithParams(testUserId);
@@ -66,9 +70,16 @@ describe('API Route: /api/admin/chats/[userId]', () => {
         user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
       });
       const mockChatData = [
-        { id: 'chat1', userId: testUserId, title: 'Chat 1', messages: [{id: 'msg1', content: 'Hello'}] },
+        {
+          id: 'chat1',
+          userId: testUserId,
+          title: 'Chat 1',
+          messages: [{ id: 'msg1', content: 'Hello' }],
+        },
       ];
-      (getChatsAndMessagesByUserId as jest.Mock).mockResolvedValue(mockChatData);
+      (getChatsAndMessagesByUserId as jest.Mock).mockResolvedValue(
+        mockChatData,
+      );
 
       const response = await callGetHandlerWithParams(testUserId);
       const jsonResponse = await response.json();
@@ -93,38 +104,40 @@ describe('API Route: /api/admin/chats/[userId]', () => {
     });
 
     test('Test Case 5: Admin Authenticated Access - Invalid userId param - should return 400', async () => {
-        (auth as jest.Mock).mockResolvedValue({
-          user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
-        });
-        // The route handler itself checks for userId validity.
-        // We can simulate this by passing an empty string or undefined if the typings allowed,
-        // but here the handler expects string. The check is params.userId
-        // If userId is undefined (e.g. route was /api/admin/chats/ instead of /api/admin/chats/someId)
-        // Next.js itself might handle this before it hits the handler, or context.params.userId would be undefined.
-        // For a direct test of the handler's internal check:
-        const { req } = createMocks({ method: 'GET' } as RequestOptions);
-        // Simulate a scenario where Next.js might pass an invalid param structure,
-        // though typically `params` object itself would be correctly structured by Next.js routing.
-        // The handler has: if (!userId || typeof userId !== 'string')
-        const context = { params: { userId: '' } }; // Testing empty string userId
-        const response = await GET(req as any, context);
-        const jsonResponse = await response.json();
-
-        expect(response.status).toBe(400);
-        expect(jsonResponse.error).toBe('Invalid userId parameter');
-     });
-
-     test('Test Case 6: Admin Authenticated Access - Database Error - should return 500', async () => {
-        (auth as jest.Mock).mockResolvedValue({
-          user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
-        });
-        (getChatsAndMessagesByUserId as jest.Mock).mockRejectedValue(new Error('Database query failed'));
-  
-        const response = await callGetHandlerWithParams(testUserId);
-        const jsonResponse = await response.json();
-  
-        expect(response.status).toBe(500);
-        expect(jsonResponse.error).toBe('Internal Server Error');
+      (auth as jest.Mock).mockResolvedValue({
+        user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
       });
+      // The route handler itself checks for userId validity.
+      // We can simulate this by passing an empty string or undefined if the typings allowed,
+      // but here the handler expects string. The check is params.userId
+      // If userId is undefined (e.g. route was /api/admin/chats/ instead of /api/admin/chats/someId)
+      // Next.js itself might handle this before it hits the handler, or context.params.userId would be undefined.
+      // For a direct test of the handler's internal check:
+      const { req } = createMocks({ method: 'GET' } as RequestOptions);
+      // Simulate a scenario where Next.js might pass an invalid param structure,
+      // though typically `params` object itself would be correctly structured by Next.js routing.
+      // The handler has: if (!userId || typeof userId !== 'string')
+      const context = { params: { userId: '' } }; // Testing empty string userId
+      const response = await GET(req as any, context);
+      const jsonResponse = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(jsonResponse.error).toBe('Invalid userId parameter');
+    });
+
+    test('Test Case 6: Admin Authenticated Access - Database Error - should return 500', async () => {
+      (auth as jest.Mock).mockResolvedValue({
+        user: { id: 'admin-user', email: 'admin@example.com', isAdmin: true },
+      });
+      (getChatsAndMessagesByUserId as jest.Mock).mockRejectedValue(
+        new Error('Database query failed'),
+      );
+
+      const response = await callGetHandlerWithParams(testUserId);
+      const jsonResponse = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(jsonResponse.error).toBe('Internal Server Error');
+    });
   });
 });

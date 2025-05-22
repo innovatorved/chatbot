@@ -23,13 +23,17 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function getAllUsers(): Promise<Array<Pick<User, 'id' | 'email' | 'isAdmin'>>> {
+export async function getAllUsers(): Promise<
+  Array<Pick<User, 'id' | 'email' | 'isAdmin'>>
+> {
   try {
-    return await db.select({
-      id: user.id,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    }).from(user);
+    return await db
+      .select({
+        id: user.id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      })
+      .from(user);
   } catch (error) {
     console.error('Failed to get all users from database');
     throw error;
@@ -46,7 +50,11 @@ export async function countUsers(): Promise<number> {
   }
 }
 
-export async function createUser(email: string, password: string, isAdmin: boolean = false) {
+export async function createUser(
+  email: string,
+  password: string,
+  isAdmin: boolean = false,
+) {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
 
@@ -105,9 +113,13 @@ export async function getChatsByUserId({ id }: { id: string }) {
   }
 }
 
-export type ChatWithMessages = import('./schema').Chat & { messages: import('./schema').DBMessage[] };
+export type ChatWithMessages = import('./schema').Chat & {
+  messages: import('./schema').DBMessage[];
+};
 
-export async function getChatsAndMessagesByUserId(userId: string): Promise<ChatWithMessages[]> {
+export async function getChatsAndMessagesByUserId(
+  userId: string,
+): Promise<ChatWithMessages[]> {
   try {
     // 1. Fetch all chats for the user
     const userChats = await db
@@ -137,7 +149,10 @@ export async function getChatsAndMessagesByUserId(userId: string): Promise<ChatW
 
     return chatsWithMessages;
   } catch (error) {
-    console.error('Failed to get chats and messages by user ID from database:', error);
+    console.error(
+      'Failed to get chats and messages by user ID from database:',
+      error,
+    );
     throw error;
   }
 }

@@ -10,12 +10,5 @@ export const config = {
   // - All API routes
   // - Login and register pages
   // - All admin pages
-  matcher: [
-    '/',
-    '/:id',
-    '/api/:path*',
-    '/login',
-    '/register',
-    '/admin/:path*',
-  ],
+  matcher: ['/', '/:id', '/api/:path*', '/login', '/register', '/admin/:path*'],
 };
