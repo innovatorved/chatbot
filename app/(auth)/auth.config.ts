@@ -1,9 +1,9 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
-    newUser: '/',
+    signIn: "/login",
+    newUser: "/",
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -12,20 +12,20 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnRoot = nextUrl.pathname === '/';
+      const isOnRoot = nextUrl.pathname === "/";
       const isOnChat =
-        nextUrl.pathname.startsWith('/chat') ||
+        nextUrl.pathname.startsWith("/chat") ||
         nextUrl.pathname.match(/^\/[a-zA-Z0-9_-]{20,}/); // Matches root paths that look like chat IDs
       const isOnPublicApi =
-        nextUrl.pathname.startsWith('/api/chat') ||
-        nextUrl.pathname.startsWith('/api/files'); // Or other public API paths
+        nextUrl.pathname.startsWith("/api/chat") ||
+        nextUrl.pathname.startsWith("/api/files"); // Or other public API paths
 
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const isOnRegister = nextUrl.pathname.startsWith("/register");
+      const isOnLogin = nextUrl.pathname.startsWith("/login");
 
-      const isOnAdminArea = nextUrl.pathname.startsWith('/admin');
-      const isOnAdminLogin = nextUrl.pathname.startsWith('/admin/login');
-      const isOnAdminApi = nextUrl.pathname.startsWith('/api/admin');
+      const isOnAdminArea = nextUrl.pathname.startsWith("/admin");
+      const isOnAdminLogin = nextUrl.pathname.startsWith("/admin/login");
+      const isOnAdminApi = nextUrl.pathname.startsWith("/api/admin");
 
       // Handle Admin Area access
       if (isOnAdminArea || isOnAdminApi) {
@@ -33,7 +33,7 @@ export const authConfig = {
           if (isLoggedIn && auth?.user?.isAdmin) {
             // If admin is logged in and tries to access admin login, redirect to dashboard
             return Response.redirect(
-              new URL('/admin/dashboard/users', nextUrl as unknown as URL),
+              new URL("/admin/dashboard/users", nextUrl as unknown as URL),
             );
           }
           return true; // Allow access to admin login page for everyone else
@@ -42,12 +42,12 @@ export const authConfig = {
         // For any other /admin path or /api/admin path
         if (!isLoggedIn) {
           return Response.redirect(
-            new URL('/admin/login', nextUrl as unknown as URL),
+            new URL("/admin/login", nextUrl as unknown as URL),
           );
         }
         if (!auth?.user?.isAdmin) {
           // If logged in but not an admin, redirect to main app page or show an error
-          return Response.redirect(new URL('/', nextUrl as unknown as URL)); // Or a specific "access denied" page
+          return Response.redirect(new URL("/", nextUrl as unknown as URL)); // Or a specific "access denied" page
         }
         return true; // Admin is logged in, allow access
       }
@@ -55,7 +55,7 @@ export const authConfig = {
       // Handle general public/user routes
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
         // If logged in, redirect from /login or /register to root
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+        return Response.redirect(new URL("/", nextUrl as unknown as URL));
       }
 
       if (isOnLogin || isOnRegister) {
@@ -90,7 +90,6 @@ export const authConfig = {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.isAdmin = token.isAdmin as boolean;
-        console.log({ session });
       }
       return session;
     },
