@@ -1,12 +1,13 @@
 'use client';
 
+'use client';
+
 import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
-import { PlusIcon } from '@/components/icons';
-import { SidebarHistory } from '@/components/sidebar-history';
-import { SidebarUserNav } from '@/components/sidebar-user-nav';
-import { Button } from '@/components/ui/button';
+import { EnvelopeIcon } from '@/components/icons/envelope';
+import { PencilSimpleIcon } from '@/components/icons/pencil-simple';
+import { UserCircleIcon } from '@/components/icons/user-circle';
 import {
   Sidebar,
   SidebarContent,
@@ -16,10 +17,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
-  const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
   return (
@@ -35,33 +34,44 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               className="flex flex-row gap-3 items-center"
             >
               <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+                AI Writing Assistant
               </span>
             </Link>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  type="button"
-                  className="p-2 h-fit"
-                  onClick={() => {
-                    setOpenMobile(false);
-                    router.push('/');
-                    router.refresh();
-                  }}
-                >
-                  <PlusIcon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
-            </Tooltip>
           </div>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarHistory user={user} />
+      <SidebarContent className="mt-4">
+        <div className="flex flex-col gap-2 px-2">
+          <Link
+            href="#"
+            className="flex items-center gap-2 p-2 rounded-md bg-[#eaedf1]"
+            onClick={() => {
+              setOpenMobile(false);
+            }}
+          >
+            <PencilSimpleIcon />
+            <span>Rephrase</span>
+          </Link>
+          <Link
+            href="#"
+            className="flex items-center gap-2 p-2 rounded-md"
+            onClick={() => {
+              setOpenMobile(false);
+            }}
+          >
+            <EnvelopeIcon />
+            <span>Email</span>
+          </Link>
+        </div>
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>
+        {user && (
+          <div className="flex items-center gap-2 p-2 rounded-md">
+            <UserCircleIcon />
+            <span>{user.email}</span>
+          </div>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -1,227 +1,102 @@
 'use client';
 
 import type { UIMessage } from 'ai';
-import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { memo } from 'react';
 import { Markdown } from './markdown';
-import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
 import equal from 'fast-deep-equal';
 import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { MessageEditor } from './message-editor';
-import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
-const PurePreviewMessage = ({
-  chatId,
-  message,
-  vote,
-  isLoading,
-  setMessages,
-  reload,
-  isReadonly,
-}: {
-  chatId: string;
-  message: UIMessage;
-  vote: Vote | undefined;
-  isLoading: boolean;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
-  isReadonly: boolean;
-}) => {
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+// Simplified props
+const PurePreviewMessage = ({ message }: { message: UIMessage }) => {
+  const isAssistant = message.role === 'assistant';
+  const avatarUrl = isAssistant
+    ? 'https://lh3.googleusercontent.com/a/ACg8ocJ_39364myR9nQ0G3_8c3D9Q_L9gBYgO7uQ0gS_EnQ=s96-c'
+    : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80';
+
+  // Filter out non-text parts, as other types are not handled by the new design.
+  const textParts = message.parts?.filter((part) => part.type === 'text');
+
+  if (!textParts || textParts.length === 0) {
+    return null; // Or some placeholder if a message must be rendered
+  }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        data-testid={`message-${message.role}`}
-        className="w-full mx-auto max-w-3xl px-4 group/message"
-        initial={{ y: 5, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        data-role={message.role}
-      >
+    <div
+      data-testid={`message-${message.role}`}
+      className={cn(
+        'flex gap-3 p-4 w-full',
+        isAssistant ? 'justify-start' : 'justify-end',
+      )}
+    >
+      {isAssistant && (
         <div
-          className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
-            {
-              'w-full': mode === 'edit',
-              'group-data-[role=user]/message:w-fit': mode !== 'edit',
-            },
-          )}
-        >
-          {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-              <div className="translate-y-px">
-                <SparklesIcon size={14} />
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-4 w-full">
-            {message.experimental_attachments && (
-              <div
-                data-testid={`message-attachments`}
-                className="flex flex-row justify-end gap-2"
-              >
-                {message.experimental_attachments.map((attachment) => (
-                  <PreviewAttachment
-                    key={attachment.url}
-                    attachment={attachment}
-                  />
-                ))}
-              </div>
+          className="w-8 h-8 rounded-full bg-cover bg-center shrink-0"
+          style={{ backgroundImage: `url(${avatarUrl})` }}
+        ></div>
+      )}
+      <div
+        className={cn(
+          'flex flex-col gap-1 max-w-[70%]',
+          isAssistant ? 'items-start' : 'items-end',
+        )}
+      >
+        {isAssistant && (
+          <span className="text-xs text-gray-600">ChatBot</span>
+        )}
+        {textParts.map((part, index) => (
+          <div
+            key={`message-${message.id}-part-${index}`}
+            data-testid="message-content"
+            className={cn(
+              'p-3 rounded-lg text-[#101518]',
+              isAssistant ? 'bg-[#eaedf1]' : 'bg-[#dce8f3]',
             )}
-
-            {message.parts?.map((part, index) => {
-              const { type } = part;
-              const key = `message-${message.id}-part-${index}`;
-
-              if (type === 'reasoning') {
-                return (
-                  <MessageReasoning
-                    key={key}
-                    isLoading={isLoading}
-                    reasoning={part.reasoning}
-                  />
-                );
-              }
-
-              if (type === 'text') {
-                if (mode === 'view') {
-                  return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              data-testid="message-edit-button"
-                              variant="ghost"
-                              className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                              onClick={() => {
-                                setMode('edit');
-                              }}
-                            >
-                              <PencilEditIcon />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
-                        </Tooltip>
-                      )}
-
-                      <div
-                        data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                            message.role === 'user',
-                        })}
-                      >
-                        <Markdown>{part.text}</Markdown>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (mode === 'edit') {
-                  return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      <div className="size-8" />
-
-                      <MessageEditor
-                        key={message.id}
-                        message={message}
-                        setMode={setMode}
-                        setMessages={setMessages}
-                        reload={reload}
-                      />
-                    </div>
-                  );
-                }
-              }
-
-              if (type === 'tool-invocation') {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state } = toolInvocation;
-
-                if (state === 'call') {
-                  const { args } = toolInvocation;
-
-                  return <div key={toolCallId}>No Tool Configured</div>;
-                }
-
-                if (state === 'result') {
-                  const { result } = toolInvocation;
-
-                  return (
-                    <div key={toolCallId}>
-                      <pre>{JSON.stringify(result, null, 2)}</pre>
-                    </div>
-                  );
-                }
-              }
-            })}
-
-            {!isReadonly && (
-              <MessageActions
-                key={`action-${message.id}`}
-                chatId={chatId}
-                message={message}
-                vote={vote}
-                isLoading={isLoading}
-              />
-            )}
+          >
+            {/* Assuming part.type is 'text' due to filtering */}
+            <Markdown>{part.text}</Markdown>
           </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
+        ))}
+      </div>
+      {!isAssistant && (
+        <div
+          className="w-8 h-8 rounded-full bg-cover bg-center shrink-0"
+          style={{ backgroundImage: `url(${avatarUrl})` }}
+        ></div>
+      )}
+    </div>
   );
 };
 
 export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    // Simplified comparison based on visible content
     if (prevProps.message.id !== nextProps.message.id) return false;
+    if (prevProps.message.role !== nextProps.message.role) return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
-
     return true;
   },
 );
 
 export const ThinkingMessage = () => {
-  const role = 'assistant';
+  const avatarUrl =
+    'https://lh3.googleusercontent.com/a/ACg8ocJ_39364myR9nQ0G3_8c3D9Q_L9gBYgO7uQ0gS_EnQ=s96-c';
 
   return (
-    <motion.div
+    <div
       data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message "
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
-      data-role={role}
+      className="flex gap-3 p-4 w-full justify-start"
     >
       <div
-        className={cx(
-          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
-          {
-            'group-data-[role=user]/message:bg-muted': true,
-          },
-        )}
-      >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
-        </div>
-
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
-          </div>
+        className="w-8 h-8 rounded-full bg-cover bg-center shrink-0"
+        style={{ backgroundImage: `url(${avatarUrl})` }}
+      ></div>
+      <div className="flex flex-col gap-1 items-start max-w-[70%]">
+        <span className="text-xs text-gray-600">ChatBot</span>
+        <div className="p-3 rounded-lg bg-[#eaedf1] text-[#101518]">
+          Hmm...
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

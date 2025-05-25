@@ -1,34 +1,24 @@
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+// Removed Geist fonts, will use Inter and Noto Sans from Google Fonts
 import { ThemeProvider } from '@/components/theme-provider';
 
-import './globals.css';
+import './globals.css'; // This should contain the @tailwind base, components, utilities and the font-family definition
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chatbot-in.vercel.app'),
-  title: 'Helper',
-  description: 'A chatbot for your help',
+  metadataBase: new URL('https://chatbot-in.vercel.app'), // Replace with actual URL if needed
+  title: 'AI Writing Assistant', // Updated title
+  description: 'An AI assistant for writing tasks.', // Updated description
 };
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-const geist = Geist({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist',
-});
+// Removed Geist font loading
 
-const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist-mono',
-});
-
-const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
-const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';
+const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)'; // Assuming default light theme
+const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)'; // Assuming default dark theme
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;
@@ -55,24 +45,27 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      // `next-themes` injects an extra classname to the body element to avoid
-      // visual flicker before hydration. Hence the `suppressHydrationWarning`
-      // prop is necessary to avoid the React hydration mismatch warning.
-      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable}`}
+      // Removed Geist font variables from className
     >
       <head>
+        <link
+          rel="stylesheet"
+          as="style"
+          href="https://fonts.googleapis.com/css2?display=swap&family=Inter%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+        />
+        {/* Removed Tailwind CDN script */}
         <script
           dangerouslySetInnerHTML={{
             __html: THEME_COLOR_SCRIPT,
           }}
         />
+        {/* The font-family will be set in globals.css for the body tag */}
       </head>
-      <body className="antialiased">
+      <body className="antialiased"> {/* Removed inline style for font-family */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="system" // Or "light" / "dark" as per new design preference
           enableSystem
           disableTransitionOnChange
         >

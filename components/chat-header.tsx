@@ -1,76 +1,39 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { useWindowSize } from 'usehooks-ts';
 
-import { ModelSelector } from '@/components/model-selector';
-import { SidebarToggle } from '@/components/sidebar-toggle';
-import { Button } from '@/components/ui/button';
-import { PlusIcon } from './icons';
-import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { type VisibilityType, VisibilitySelector } from './visibility-selector';
+import { CubeIcon } from '@/components/icons/cube';
+import { GearIcon } from '@/components/icons/gear';
+import { Button } from '@/components/ui/button';
 
-function PureChatHeader({
-  chatId,
-  selectedModelId,
-  selectedVisibilityType,
-  isReadonly,
-  isSharingOptionEnabled = true,
-}: {
-  chatId: string;
-  selectedModelId: string;
-  selectedVisibilityType: VisibilityType;
-  isReadonly: boolean;
-  isSharingOptionEnabled?: boolean;
-}) {
-  const router = useRouter();
-  const { open } = useSidebar();
-
-  const { width: windowWidth } = useWindowSize();
+// Props for the ChatHeader component are removed as they are no longer used.
+// Removed: chatId, selectedModelId, selectedVisibilityType, isReadonly, isSharingOptionEnabled
+function PureChatHeader() {
+  // Removed: router, open, windowWidth as they are no longer used.
 
   return (
-    <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
-      <SidebarToggle />
-
-      {(!open || windowWidth < 768) && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
-              onClick={() => {
-                router.push('/');
-                router.refresh();
-              }}
-            >
-              <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
-      )}
-
-      {!isReadonly && (
-        <>
-          <ModelSelector
-            selectedModelId={selectedModelId}
-            className="order-1 md:order-2"
-          />
-          {isSharingOptionEnabled && (
-            <VisibilitySelector
-              chatId={chatId}
-              selectedVisibilityType={selectedVisibilityType}
-              className="order-1 md:order-3"
-            />
-          )}
-        </>
-      )}
+    <header className="flex sticky top-0 z-10 justify-between items-center p-4 border-b bg-white">
+      <div className="flex items-center gap-2">
+        <CubeIcon />
+        <h1 className="text-lg font-semibold">ChatBot</h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" className="px-4 py-2">
+          Share
+        </Button>
+        <Button variant="ghost" size="icon">
+          <GearIcon />
+        </Button>
+        <div
+          className="w-8 h-8 rounded-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80')",
+          }}
+        ></div>
+      </div>
     </header>
   );
 }
 
-export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
-  return prevProps.selectedModelId === nextProps.selectedModelId;
-});
+// Removed the custom comparison function for memo as props are removed.
+export const ChatHeader = memo(PureChatHeader);
