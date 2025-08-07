@@ -25,7 +25,6 @@ export const myProvider = customProvider({
   languageModels: {
     'chat-nim-llama3-70b': nim('meta/llama-3.3-70b-instruct'),
     'chat-llama3.3-70b-versatile': groq('llama-3.3-70b-versatile'),
-    'chat-llama-4-scout-17b': groq('meta-llama/llama-4-scout-17b-16e-instruct'),
     'chat-gemini-2.0-flash-lite': google('gemini-2.0-flash-lite'),
     'chat-gemini-1.5-flash-8b': google('gemini-1.5-flash-8b'),
     'chat-gemini-2.0-flash': google('gemini-2.0-flash'),
@@ -37,7 +36,11 @@ export const myProvider = customProvider({
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
     'title-model': google('gemini-1.5-flash-8b'),
-    'openai/gpt-oss-120b': groq('openai/gpt-oss-120b'),
+    'openai/gpt-oss-20b': groq('openai/gpt-oss-20b'),
+    'openai/gpt-oss-120b': wrapLanguageModel({
+      model: groq('openai/gpt-oss-120b'),
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    }),
   },
   imageModels: {},
 });

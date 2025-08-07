@@ -18,11 +18,6 @@ export const chatModels: Array<ChatModel> = [
     description: 'For complex, multi-step tasks with versatility',
   },
   {
-    id: 'chat-llama-4-scout-17b',
-    name: 'LLAMA 4 Scout 17B 16e-instruct',
-    description: 'LLAMA 4 Scout 17B 16e-instruct model, built by Meta',
-  },
-  {
     id: 'chat-gemini-2.0-flash-lite',
     name: 'Gemini 2.0 Flash-Lite',
     description: 'LLM model, built by Google',
@@ -54,6 +49,11 @@ export const chatModels: Array<ChatModel> = [
     id: 'chat-model-reasoning',
     name: 'Qwen QwQ 2b',
     description: 'Uses advanced reasoning and thinking for complex tasks',
+  },
+  {
+    id: 'openai/gpt-oss-20b',
+    name: 'GPT-OSS 20b',
+    description: 'Open source model by OpenAI, hosted on Groq',
   },
   {
     id: 'openai/gpt-oss-120b',
