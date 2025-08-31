@@ -6,7 +6,6 @@ import {
 
 import { createGroq } from '@ai-sdk/groq';
 import { google } from '@ai-sdk/google';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 const groq = createGroq({
   baseURL:
