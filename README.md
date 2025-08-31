@@ -24,14 +24,12 @@ This application supports the following AI models:
 
 | Name | Description |
 | --- | --- |
-| NIM Llama3 70b | For complex, multi-step tasks |
 | Llama 3.3 70b Versatile | For complex, multi-step tasks with versatility |
 | LLAMA 4 Scout 17B 16e-instruct | LLAMA 4 Scout 17B 16e-instruct model, built by Meta |
 | Gemini 2.0 Flash-Lite | LLM model, built by Google |
 | Gemini 1.5 Flash-8B | Built by Google, It is a small model designed for lower intelligence tasks. |
 | Gemini 2.0 Flash | Built by Google, Next generation features, speed, thinking, realtime streaming |
 | Gemini 2.0 Flash + Web Search | Built by Google, Next generation features, speed, thinking, realtime streaming + Google Search |
-| NIM llama Maverick 17B 128e-instruct | NIM LLAMA Maverick 17B 128e-instruct model, built by Meta |
 | Qwen QwQ 2b | Uses advanced reasoning and thinking for complex tasks |
 | GPT-OSS 120b | Open source model by OpenAI, hosted on Groq |
 

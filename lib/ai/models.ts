@@ -8,11 +8,6 @@ interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'chat-nim-llama3-70b',
-    name: 'NIM Llama3 70b',
-    description: 'For complex, multi-step tasks',
-  },
-  {
     id: 'chat-llama3.3-70b-versatile',
     name: 'Llama 3.3 70b Versatile',
     description: 'For complex, multi-step tasks with versatility',
@@ -41,13 +36,8 @@ export const chatModels: Array<ChatModel> = [
       'Built by Google, Next generation features, speed, thinking, realtime streaming + Google Search',
   },
   {
-    id: 'chat-nim-maverick-17b-128e',
-    name: 'NIM llama Maverick 17B 128e-instruct',
-    description: 'NIM LLAMA Maverick 17B 128e-instruct model, built by Meta',
-  },
-  {
     id: 'chat-model-reasoning',
-    name: 'Qwen QwQ 2b',
+    name: 'Qwen-3 32b',
     description: 'Uses advanced reasoning and thinking for complex tasks',
   },
   {
