@@ -1,0 +1,6 @@
+ignoredBuiltDependencies:
+  - '@biomejs/biome'
+  - esbuild
+  - msgpackr-extract
+  - sharp
+  - unrs-resolver
