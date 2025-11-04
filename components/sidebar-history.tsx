@@ -213,11 +213,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     mutate,
   } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
     fallbackData: [],
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
-
-  useEffect(() => {
-    mutate();
-  }, [pathname, mutate]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

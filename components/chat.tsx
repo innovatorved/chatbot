@@ -42,10 +42,12 @@ export function Chat(props: ChatProps) {
 
   // Add fade-in animation state
   const [isVisible, setIsVisible] = useState(false);
+  const [isNewChat, setIsNewChat] = useState(true);
 
   useEffect(() => {
     // Reset animation when chat ID changes
     setIsVisible(false);
+    setIsNewChat(true);
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 50);
@@ -86,7 +88,13 @@ export function Chat(props: ChatProps) {
     ...(isPrivateMode
       ? { api: '/api/chat/custom' }
       : {
-          onFinish: () => mutate('/api/history'),
+          onFinish: () => {
+            // Only refresh history when first message is sent (new chat created)
+            if (isNewChat && messages.length === 0) {
+              mutate('/api/history');
+              setIsNewChat(false);
+            }
+          },
           onError: () => toast.error('An error occured, please try again!'),
         }),
   });
@@ -94,6 +102,11 @@ export function Chat(props: ChatProps) {
   const { data: votes } = useSWR<Array<Vote>>(
     !isPrivateMode && messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+    },
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
