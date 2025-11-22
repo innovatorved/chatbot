@@ -29,9 +29,17 @@ export const login = async (
   try {
     // Skip Turnstile validation in development mode
     if (process.env.NODE_ENV === 'production') {
+      const token = formData.get('cf-turnstile-response')?.toString() ?? '';
+      const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+      if (!secretKey) {
+        console.error('Turnstile secret key is missing');
+        return { status: 'failed' };
+      }
+
       const validationResponse = await validateTurnstileToken({
-        token: formData.get('cf-turnstile-response')?.toString() ?? '',
-        secretKey: process.env.TURNSTILE_SECRET_KEY!,
+        token,
+        secretKey,
         idempotencyKey: generateRandomUUID(),
       });
 
@@ -79,9 +87,17 @@ export const register = async (
   try {
     // Skip Turnstile validation in development mode
     if (process.env.NODE_ENV === 'production') {
+      const token = formData.get('cf-turnstile-response')?.toString() ?? '';
+      const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+      if (!secretKey) {
+        console.error('Turnstile secret key is missing');
+        return { status: 'failed' };
+      }
+
       const validationResponse = await validateTurnstileToken({
-        token: formData.get('cf-turnstile-response')?.toString() ?? '',
-        secretKey: process.env.TURNSTILE_SECRET_KEY!,
+        token,
+        secretKey,
         idempotencyKey: generateRandomUUID(),
       });
 

@@ -57,7 +57,7 @@ export default function Page() {
     } else if (state.status === 'success') {
       toast({ type: 'success', description: 'Account created successfully!' });
 
-      setIsSuccessful(true);
+      setTimeout(() => setIsSuccessful(true), 0);
       router.refresh();
     }
   }, [state, router]);
@@ -65,7 +65,10 @@ export default function Page() {
   // Auto-complete Turnstile in development mode
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      handleTurnstileStatus('success');
+      const timer = setTimeout(() => {
+        handleTurnstileStatus('success');
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [handleTurnstileStatus]);
 

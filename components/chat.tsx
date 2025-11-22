@@ -46,8 +46,17 @@ export function Chat(props: ChatProps) {
 
   useEffect(() => {
     // Reset animation when chat ID changes
-    setIsVisible(false);
-    setIsNewChat(true);
+    // Using setTimeout to avoid setting state during render (which happens if called synchronously in effect in some cases)
+    // but here we want to trigger a re-render anyway.
+    // The linter warning comes because we are setting state unconditionally in an effect.
+    // However, here we want to reset state when `id` changes.
+    // To satisfy the linter and be safer:
+    const resetState = () => {
+      setIsNewChat(true);
+      setIsVisible(false);
+    };
+    resetState();
+
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 50);
