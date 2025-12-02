@@ -1,18 +1,15 @@
 'use client';
 
 import type { UIMessage } from 'ai';
-import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { PencilEditIcon, QuestionIcon } from './icons';
+import { QuestionIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import equal from 'fast-deep-equal';
 import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
@@ -132,11 +129,9 @@ const PurePreviewMessage = ({
 
               if (type === 'tool-invocation') {
                 const { toolInvocation } = part;
-                const { toolName, toolCallId, state } = toolInvocation;
+                const { toolCallId, state } = toolInvocation;
 
                 if (state === 'call') {
-                  const { args } = toolInvocation;
-
                   return <div key={toolCallId}>No Tool Configured</div>;
                 }
 

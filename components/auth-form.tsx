@@ -61,9 +61,10 @@ export function AuthForm({
           required
         />
       </div>
-      {process.env.NODE_ENV === 'production' ? (
+      {process.env.NODE_ENV === 'production' &&
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
         <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
           retry="auto"
           refreshExpired="auto"
           onError={() => {
@@ -75,7 +76,7 @@ export function AuthForm({
           onLoad={() => {
             handleTurnstileStatus('required');
           }}
-          onVerify={(token) => {
+          onVerify={(_) => {
             handleTurnstileStatus('success');
           }}
         />

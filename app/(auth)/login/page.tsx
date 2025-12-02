@@ -42,25 +42,26 @@ export default function Page() {
 
   useEffect(() => {
     if (state.status === 'failed') {
-      handleTurnstileStatus('required');
+      // Use setTimeout to avoid state update during render
+      setTimeout(() => handleTurnstileStatus('required'), 0);
       toast({
         type: 'error',
         description: 'Invalid credentials!',
       });
     } else if (state.status === 'invalid_data') {
-      handleTurnstileStatus('required');
+      setTimeout(() => handleTurnstileStatus('required'), 0);
       toast({
         type: 'error',
         description: 'Failed validating your submission!',
       });
     } else if (state.status === 'invalid_captcha') {
-      handleTurnstileStatus('required');
+      setTimeout(() => handleTurnstileStatus('required'), 0);
       toast({
         type: 'error',
         description: 'Failed validating the reCAPTCHA!',
       });
     } else if (state.status === 'success') {
-      setIsSuccessful(true);
+      setTimeout(() => setIsSuccessful(true), 0);
       router.refresh();
     }
   }, [state.status, handleTurnstileStatus, router]);
@@ -68,7 +69,13 @@ export default function Page() {
   // Auto-complete Turnstile in development mode
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      handleTurnstileStatus('success');
+      // We use a timeout to avoid setting state during render or immediately after
+      // which can cause issues with React's strict mode or concurrent features.
+      // Also ensures it happens after mount.
+      const timer = setTimeout(() => {
+        handleTurnstileStatus('success');
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [handleTurnstileStatus]);
 

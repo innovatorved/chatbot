@@ -1,7 +1,6 @@
 'use client';
 
 import type { Attachment, UIMessage } from 'ai';
-import cx from 'classnames';
 import type React from 'react';
 import {
   useRef,
@@ -275,7 +274,7 @@ function PureMultimodalInput({
           placeholder="Message ChatBot..."
           value={input}
           onChange={handleInput}
-          className={cx(
+          className={cn(
             messages.length === 0 ? 'min-h-[120px]' : 'min-h-[52px]',
             'max-h-[calc(75dvh)] overflow-hidden resize-none rounded-3xl text-base bg-muted pl-12 pr-24 py-3.5 border-2 border-border transition-colors',
             className,
