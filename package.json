@@ -9,7 +9,7 @@
     "lint": "eslint . && biome lint --write --unsafe",
     "lint:fix": "eslint . --fix && biome lint --write --unsafe",
     "format": "biome format --write",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "npx bun --bun drizzle-kit generate -y",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
