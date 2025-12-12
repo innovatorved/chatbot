@@ -6,10 +6,10 @@ A modern, feature-rich chatbot application powered by multiple AI models with an
 
 To get started with this project, you will need to:
 
-1.  Install the dependencies: `pnpm install`
+1.  Install the dependencies: `bun install`
 2.  Set up your environment variables by creating a `.env` file. See the "Environment Variables" section below for more details.
-3.  Run database migrations: `pnpm run db:migrate`
-4.  Start the development server: `pnpm run dev`
+3.  Run database migrations: `bun run db:migrate`
+4.  Start the development server: `bun run dev`
 5.  Open [http://localhost:3000](http://localhost:3000) in your browser
 
 

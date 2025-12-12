@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "tsx lib/db/migrate && next build",
-    "start": "next start",
+    "dev": "bun --bun next dev",
+    "build": "tsx lib/db/migrate && bun --bun next build",
+    "start": "bun --bun next start",
     "lint": "eslint . && biome lint --write --unsafe",
     "lint:fix": "eslint . --fix && biome lint --write --unsafe",
     "format": "biome format --write",
