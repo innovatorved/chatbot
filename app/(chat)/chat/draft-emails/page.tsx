@@ -1,15 +1,14 @@
-import { cookies } from 'next/headers';
-
-import { Chat } from '@/components/chat';
-import type { Metadata } from 'next';
-import { getChatModelFromCookie } from '@/lib/utils';
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { Chat } from "@/components/chat";
+import { getChatModelFromCookie } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chatbot-in.vercel.app/draft-emails'),
-  title: 'Draft Professional Emails',
+	metadataBase: new URL("https://chatbot-in.vercel.app/draft-emails"),
+	title: "Draft Professional Emails",
 };
 
-const chatId = 'draft-emails';
+const chatId = "draft-emails";
 
 const SYSTEM_PROMPT = `
 You are an expert email writing assistant, focused on crafting professional and empathetic messages. Follow these guidelines when composing emails:
@@ -35,15 +34,15 @@ Always ask yourself: "Will this message make the reader feel valued and motivate
 `;
 
 export default async function PrivateCodeChatPage() {
-  const cookieStore = await cookies();
-  const selectedChatModel = await getChatModelFromCookie(cookieStore);
+	const cookieStore = await cookies();
+	const selectedChatModel = await getChatModelFromCookie(cookieStore);
 
-  return (
-    <Chat
-      id={chatId}
-      selectedChatModel={selectedChatModel}
-      systemPrompt={SYSTEM_PROMPT}
-      isPrivateMode
-    />
-  );
+	return (
+		<Chat
+			id={chatId}
+			selectedChatModel={selectedChatModel}
+			systemPrompt={SYSTEM_PROMPT}
+			isPrivateMode
+		/>
+	);
 }

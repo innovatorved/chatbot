@@ -1,14 +1,14 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        hostname: 'avatar.vercel.sh',
-      },
-    ],
-  },
-  skipTrailingSlashRedirect: true,
+	images: {
+		remotePatterns: [
+			{
+				hostname: "avatar.vercel.sh",
+			},
+		],
+	},
+	skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

@@ -1,14 +1,14 @@
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+	"You are a friendly assistant! Keep your responses concise and helpful.";
 
 export const systemPrompt = ({
-  selectedChatModel,
+	selectedChatModel,
 }: {
-  selectedChatModel: string;
+	selectedChatModel: string;
 }) => {
-  if (selectedChatModel === 'chat-model-reasoning') {
-    return regularPrompt;
-  } else {
-    return `${regularPrompt}\n`;
-  }
+	if (selectedChatModel === "chat-model-reasoning") {
+		return regularPrompt;
+	} else {
+		return `${regularPrompt}\n`;
+	}
 };
