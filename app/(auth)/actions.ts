@@ -1,7 +1,5 @@
 "use server";
 
-import { validateTurnstileToken } from "next-turnstile";
-import { v4 as generateRandomUUID } from "uuid";
 import { z } from "zod";
 import { createUser, getUser } from "@/lib/db/queries";
 import { signIn } from "./auth";
@@ -10,14 +8,9 @@ const authFormSchema = z.object({
 	email: z.string().email(),
 	password: z.string().min(6),
 });
+
 export interface LoginActionState {
-	status:
-		| "idle"
-		| "in_progress"
-		| "success"
-		| "failed"
-		| "invalid_data"
-		| "invalid_captcha";
+	status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
 }
 
 export const login = async (
@@ -25,36 +18,6 @@ export const login = async (
 	formData: FormData,
 ): Promise<LoginActionState> => {
 	try {
-		if (process.env.NODE_ENV === "production") {
-			const tokenRaw = formData.get("cf-turnstile-response");
-			const token = typeof tokenRaw === "string" ? tokenRaw : "";
-			const secretKey = process.env.TURNSTILE_SECRET_KEY;
-
-			if (!secretKey) {
-				console.error("Turnstile secret key is missing");
-				return { status: "failed" };
-			}
-
-			if (!token) {
-				return { status: "invalid_captcha" };
-			}
-
-			try {
-				const validationResponse = await validateTurnstileToken({
-					token,
-					secretKey,
-					idempotencyKey: generateRandomUUID(),
-				});
-
-				if (!validationResponse.success) {
-					return { status: "invalid_captcha" };
-				}
-			} catch (error) {
-				console.error("Turnstile validation failed", error);
-				return { status: "invalid_captcha" };
-			}
-		}
-
 		const validatedData = authFormSchema.parse({
 			email: formData.get("email"),
 			password: formData.get("password"),
@@ -83,8 +46,7 @@ export interface RegisterActionState {
 		| "success"
 		| "failed"
 		| "user_exists"
-		| "invalid_data"
-		| "invalid_captcha";
+		| "invalid_data";
 }
 
 export const register = async (
@@ -92,36 +54,6 @@ export const register = async (
 	formData: FormData,
 ): Promise<RegisterActionState> => {
 	try {
-		if (process.env.NODE_ENV === "production") {
-			const tokenRaw = formData.get("cf-turnstile-response");
-			const token = typeof tokenRaw === "string" ? tokenRaw : "";
-			const secretKey = process.env.TURNSTILE_SECRET_KEY;
-
-			if (!secretKey) {
-				console.error("Turnstile secret key is missing");
-				return { status: "failed" };
-			}
-
-			if (!token) {
-				return { status: "invalid_captcha" };
-			}
-
-			try {
-				const validationResponse = await validateTurnstileToken({
-					token,
-					secretKey,
-					idempotencyKey: generateRandomUUID(),
-				});
-
-				if (!validationResponse.success) {
-					return { status: "invalid_captcha" };
-				}
-			} catch (error) {
-				console.error("Turnstile validation failed", error);
-				return { status: "invalid_captcha" };
-			}
-		}
-
 		const validatedData = authFormSchema.parse({
 			email: formData.get("email"),
 			password: formData.get("password"),

@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-	useActionState,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
 import { toast } from "@/components/toast";
@@ -19,17 +13,6 @@ export default function Page() {
 
 	const [email, setEmail] = useState("");
 	const [isSuccessful, setIsSuccessful] = useState(false);
-	const [turnstileStatus, setTurnstileStatus] = useState<
-		"success" | "error" | "expired" | "required"
-	>("required");
-	const turnstileRef = useRef<(() => void) | null>(null);
-
-	const handleTurnstileStatus = useCallback(
-		(status: "success" | "error" | "expired" | "required") => {
-			setTurnstileStatus(status);
-		},
-		[],
-	);
 
 	const [state, formAction] = useActionState<RegisterActionState, FormData>(
 		register,
@@ -40,70 +23,24 @@ export default function Page() {
 
 	useEffect(() => {
 		if (state.status === "user_exists") {
-			turnstileRef.current?.();
 			toast({ type: "error", description: "Account already exists!" });
 		} else if (state.status === "failed") {
-			turnstileRef.current?.();
 			toast({ type: "error", description: "Failed to create account!" });
 		} else if (state.status === "invalid_data") {
-			turnstileRef.current?.();
 			toast({
 				type: "error",
 				description: "Failed validating your submission!",
 			});
-		} else if (state.status === "invalid_captcha") {
-			turnstileRef.current?.();
-			toast({
-				type: "error",
-				description: "Failed validating the CAPTCHA!",
-			});
 		} else if (state.status === "success") {
 			toast({ type: "success", description: "Account created successfully!" });
-
-			setTimeout(() => setIsSuccessful(true), 0);
-			turnstileRef.current?.();
+			setIsSuccessful(true);
 			router.refresh();
 		}
-	}, [state, router]);
-
-	// Auto-complete Turnstile in development mode
-	useEffect(() => {
-		if (process.env.NODE_ENV === "development") {
-			const timer = setTimeout(() => {
-				handleTurnstileStatus("success");
-			}, 0);
-			return () => clearTimeout(timer);
-		}
-	}, [handleTurnstileStatus]);
+	}, [state.status, router]);
 
 	const handleSubmit = (formData: FormData) => {
 		setEmail(formData.get("email") as string);
-		switch (turnstileStatus) {
-			case "required":
-				turnstileRef.current?.();
-				toast({
-					type: "error",
-					description: "Please complete the CAPTCHA challenge",
-				});
-				break;
-			case "expired":
-				turnstileRef.current?.();
-				toast({
-					type: "error",
-					description: "Please complete the CAPTCHA challenge",
-				});
-				break;
-			case "error":
-				turnstileRef.current?.();
-				toast({
-					type: "error",
-					description: "Please complete the CAPTCHA challenge",
-				});
-				break;
-			case "success":
-				formAction(formData);
-				break;
-		}
+		formAction(formData);
 	};
 
 	return (
@@ -115,12 +52,7 @@ export default function Page() {
 						Create an account with your email and password
 					</p>
 				</div>
-				<AuthForm
-					action={handleSubmit}
-					defaultEmail={email}
-					handleTurnstileStatus={handleTurnstileStatus}
-					turnstileRef={turnstileRef}
-				>
+				<AuthForm action={handleSubmit} defaultEmail={email}>
 					<SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
 					<p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
 						{"Already have an account? "}
