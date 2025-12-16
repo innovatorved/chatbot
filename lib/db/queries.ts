@@ -2,18 +2,13 @@ import "server-only";
 
 import { genSaltSync, hashSync } from "bcrypt-ts";
 import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 
+import { getDb } from "./index";
 import { chat, type DBMessage, message, type User, user, vote } from "./schema";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
-
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
 
 const withErrorHandling = async <T>(
 	operation: () => Promise<T>,
@@ -29,7 +24,7 @@ const withErrorHandling = async <T>(
 
 export async function getUser(email: string): Promise<Array<User>> {
 	return withErrorHandling(
-		() => db.select().from(user).where(eq(user.email, email)),
+		() => getDb().select().from(user).where(eq(user.email, email)),
 		"Failed to get user from database",
 	);
 }
@@ -39,7 +34,7 @@ export async function createUser(email: string, password: string) {
 	const hash = hashSync(password, salt);
 
 	return withErrorHandling(
-		() => db.insert(user).values({ email, password: hash }),
+		() => getDb().insert(user).values({ email, password: hash }),
 		"Failed to create user in database",
 	);
 }
@@ -55,7 +50,7 @@ export async function saveChat({
 }) {
 	return withErrorHandling(
 		() =>
-			db.insert(chat).values({
+			getDb().insert(chat).values({
 				id,
 				createdAt: new Date(),
 				userId,
@@ -67,16 +62,16 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
 	return withErrorHandling(async () => {
-		await db.delete(vote).where(eq(vote.chatId, id));
-		await db.delete(message).where(eq(message.chatId, id));
-		return await db.delete(chat).where(eq(chat.id, id));
+		await getDb().delete(vote).where(eq(vote.chatId, id));
+		await getDb().delete(message).where(eq(message.chatId, id));
+		return await getDb().delete(chat).where(eq(chat.id, id));
 	}, "Failed to delete chat by id from database");
 }
 
 export async function getChatsByUserId({ id }: { id: string }) {
 	return withErrorHandling(
 		() =>
-			db
+			getDb()
 				.select()
 				.from(chat)
 				.where(eq(chat.userId, id))
@@ -87,7 +82,7 @@ export async function getChatsByUserId({ id }: { id: string }) {
 
 export async function getChatById({ id }: { id: string }) {
 	return withErrorHandling(async () => {
-		const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+		const [selectedChat] = await getDb().select().from(chat).where(eq(chat.id, id));
 		return selectedChat;
 	}, "Failed to get chat by id from database");
 }
@@ -98,7 +93,7 @@ export async function saveMessages({
 	messages: Array<DBMessage>;
 }) {
 	return withErrorHandling(
-		() => db.insert(message).values(messages),
+		() => getDb().insert(message).values(messages),
 		"Failed to save messages in database",
 	);
 }
@@ -106,7 +101,7 @@ export async function saveMessages({
 export async function getMessagesByChatId({ id }: { id: string }) {
 	return withErrorHandling(
 		() =>
-			db
+			getDb()
 				.select()
 				.from(message)
 				.where(eq(message.chatId, id))
@@ -125,18 +120,18 @@ export async function voteMessage({
 	type: "up" | "down";
 }) {
 	return withErrorHandling(async () => {
-		const [existingVote] = await db
+		const [existingVote] = await getDb()
 			.select()
 			.from(vote)
 			.where(and(eq(vote.messageId, messageId)));
 
 		if (existingVote) {
-			return await db
+			return await getDb()
 				.update(vote)
 				.set({ isUpvoted: type === "up" })
 				.where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
 		}
-		return await db.insert(vote).values({
+		return await getDb().insert(vote).values({
 			chatId,
 			messageId,
 			isUpvoted: type === "up",
@@ -146,14 +141,14 @@ export async function voteMessage({
 
 export async function getVotesByChatId({ id }: { id: string }) {
 	return withErrorHandling(
-		() => db.select().from(vote).where(eq(vote.chatId, id)),
+		() => getDb().select().from(vote).where(eq(vote.chatId, id)),
 		"Failed to get votes by chat id from database",
 	);
 }
 
 export async function getMessageById({ id }: { id: string }) {
 	return withErrorHandling(
-		() => db.select().from(message).where(eq(message.id, id)),
+		() => getDb().select().from(message).where(eq(message.id, id)),
 		"Failed to get message by id from database",
 	);
 }
@@ -166,7 +161,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
 	timestamp: Date;
 }) {
 	return withErrorHandling(async () => {
-		const messagesToDelete = await db
+		const messagesToDelete = await getDb()
 			.select({ id: message.id })
 			.from(message)
 			.where(
@@ -176,13 +171,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
 		const messageIds = messagesToDelete.map((message) => message.id);
 
 		if (messageIds.length > 0) {
-			await db
+			await getDb()
 				.delete(vote)
 				.where(
 					and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
 				);
 
-			return await db
+			return await getDb()
 				.delete(message)
 				.where(
 					and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
@@ -199,14 +194,14 @@ export async function updateChatVisiblityById({
 	visibility: "private" | "public";
 }) {
 	return withErrorHandling(
-		() => db.update(chat).set({ visibility }).where(eq(chat.id, chatId)),
+		() => getDb().update(chat).set({ visibility }).where(eq(chat.id, chatId)),
 		"Failed to update chat visibility in database",
 	);
 }
 
 export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 	return withErrorHandling(async () => {
-		const userChats = await db
+		const userChats = await getDb()
 			.select({ id: chat.id })
 			.from(chat)
 			.where(eq(chat.userId, userId));
@@ -214,9 +209,9 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 		const chatIds = userChats.map((chat) => chat.id);
 
 		if (chatIds.length > 0) {
-			await db.delete(vote).where(inArray(vote.chatId, chatIds));
-			await db.delete(message).where(inArray(message.chatId, chatIds));
-			return await db.delete(chat).where(eq(chat.userId, userId));
+			await getDb().delete(vote).where(inArray(vote.chatId, chatIds));
+			await getDb().delete(message).where(inArray(message.chatId, chatIds));
+			return await getDb().delete(chat).where(eq(chat.userId, userId));
 		}
 	}, "Failed to delete all chats by user id from database");
 }

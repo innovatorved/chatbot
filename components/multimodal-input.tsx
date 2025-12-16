@@ -45,15 +45,19 @@ const uploadFile = async (file: File) => {
 		});
 
 		if (response.ok) {
-			const data = await response.json();
+			const data = (await response.json()) as {
+				url: string;
+				name: string;
+				type: string;
+			};
 			return {
 				url: data.url,
 				name: data.name,
 				contentType: data.type,
-			};
+			} as Attachment;
 		}
-		const { error } = await response.json();
-		toast.error(error);
+		const errorData = (await response.json()) as { error: string };
+		toast.error(errorData.error);
 	} catch (_error) {
 		toast.error("Failed to upload file, please try again!");
 	}

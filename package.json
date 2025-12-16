@@ -3,18 +3,21 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "bun --bun next dev",
-		"build": "tsx lib/db/migrate && bun --bun next build",
-		"start": "bun --bun next start",
-		"lint": "bun x ultracite check",
-		"fix": "bun x ultracite fix",
+		"dev": "next dev",
+		"build": "tsx lib/db/migrate && next build",
+		"start": "next start",
+		"lint": "ultracite check",
+		"fix": "ultracite fix",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "npx tsx lib/db/migrate.ts",
 		"db:studio": "drizzle-kit studio",
 		"db:push": "drizzle-kit push",
 		"db:pull": "drizzle-kit pull",
 		"db:check": "drizzle-kit check",
-		"db:up": "drizzle-kit up"
+		"db:up": "drizzle-kit up",
+		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^1.2.22",
@@ -57,6 +60,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.8",
+		"@opennextjs/cloudflare": "^1.14.6",
 		"@tailwindcss/postcss": "^4.1.16",
 		"@types/node": "^22.18.13",
 		"@types/react": "19.2.2",
@@ -66,6 +70,7 @@
 		"tailwindcss": "^4.1.16",
 		"tsx": "^4.20.6",
 		"typescript": "^5.9.3",
-		"ultracite": "^6.4.0"
+		"ultracite": "^6.4.0",
+		"wrangler": "^4.55.0"
 	}
 }

@@ -111,7 +111,7 @@ export function Chat(props: ChatProps) {
 
 	const { data: votes } = useSWR<Array<Vote>>(
 		!isPrivateMode && messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-		fetcher,
+		fetcher as any,
 		{
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
