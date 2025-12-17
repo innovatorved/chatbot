@@ -16,6 +16,7 @@ export const myProvider = customProvider({
 	languageModels: {
 		"chat-gemini-2.5-flash-lite": google("gemini-2.5-flash-lite"),
 		"chat-gemini-2.5-flash": google("gemini-2.5-flash"),
+		"chat-gemini-3-flash-preview": google("gemini-3-flash-preview"),
 		"chat-gemini-2.5-flash-search": google("gemini-2.5-flash-lite", {
 			useSearchGrounding: true,
 		}),

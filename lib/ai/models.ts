@@ -20,6 +20,12 @@ export const chatModels: Array<ChatModel> = [
 			"Best for fast performance on everyday tasks. Offers well-rounded capabilities with advanced thinking and native multimodality",
 	},
 	{
+		id: "chat-gemini-3-flash-preview",
+		name: "Gemini 3 Flash Preview",
+		description:
+			"Latest next-generation model. Ultra-fast, cost-efficient, and optimized for high-volume multimodal tasks with advanced performance",
+	},
+	{
 		id: "chat-gemini-2.0-flash",
 		name: "Gemini 2.0 Flash",
 		description:
