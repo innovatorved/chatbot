@@ -145,14 +145,17 @@ export async function POST(request: Request) {
 					sendReasoning: true,
 				});
 			},
-			onError: () => {
-				return "Oops, an error occured!";
+			onError: (error) => {
+				console.error("Chat API Error:", error);
+				return "An unexpected error occurred during the chat stream. Please try again.";
 			},
 		});
-	} catch (_error) {
-		return new Response("An error occurred while processing your request!", {
-			status: 404,
-		});
+	} catch (error) {
+		console.error("POST /api/chat error:", error);
+		return new Response(
+			error instanceof Error ? error.message : "An unexpected error occurred",
+			{ status: 500 },
+		);
 	}
 }
 
@@ -179,10 +182,12 @@ export async function DELETE(request: Request) {
 
 		await deleteChatById({ id });
 
-		return new Response("Chat deleted", { status: 200 });
-	} catch (_error) {
-		return new Response("An error occurred while processing your request!", {
-			status: 500,
-		});
+		return new Response("Chat successfully deleted", { status: 200 });
+	} catch (error) {
+		console.error("DELETE /api/chat error:", error);
+		return new Response(
+			error instanceof Error ? error.message : "Failed to delete chat",
+			{ status: 500 },
+		);
 	}
 }

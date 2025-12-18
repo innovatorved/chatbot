@@ -11,13 +11,13 @@ export const chatModels: Array<ChatModel> = [
 		id: "chat-gemini-2.5-flash-lite",
 		name: "Gemini 2.5 Flash-Lite",
 		description:
-			"Best for high volume, cost efficient tasks. Ultra fast and optimized for cost-efficiency and high throughput",
+			"The fastest and most cost-efficient model, optimized for high-volume tasks and quick responses.",
 	},
 	{
 		id: "chat-gemini-2.5-flash",
 		name: "Gemini 2.5 Flash",
 		description:
-			"Best for fast performance on everyday tasks. Offers well-rounded capabilities with advanced thinking and native multimodality",
+			"Balanced performance for everyday tasks, featuring advanced reasoning and native multimodality.",
 	},
 	{
 		id: "chat-gemini-3-flash-preview",

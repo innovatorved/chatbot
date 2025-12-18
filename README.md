@@ -19,13 +19,14 @@ This application supports the following AI models:
 
 | Model ID | Name | Description |
 | --- | --- | --- |
-| `chat-gemini-2.5-flash-lite` | **Gemini 2.5 Flash-Lite** (Default) | Best for high volume, cost efficient tasks. Ultra fast and optimized for cost-efficiency and high throughput |
-| `chat-gemini-2.5-flash` | **Gemini 2.5 Flash** | Best for fast performance on everyday tasks. Offers well-rounded capabilities with advanced thinking and native multimodality |
-| `chat-gemini-2.0-flash` | **Gemini 2.0 Flash** | Second generation workhorse model with 1 million token context window and multimodal capabilities |
-| `chat-gemini-2.5-flash-search` | **Gemini 2.5 Flash + Web Search** | Gemini 2.5 Flash with Google Search grounding for real-time information retrieval and enhanced accuracy |
-| `chat-model-reasoning` | **Qwen-3 32b** | Uses advanced reasoning and thinking for complex tasks |
-| `openai/gpt-oss-20b` | **GPT-OSS 20b** | Open source model by OpenAI, hosted on Groq |
-| `openai/gpt-oss-120b` | **GPT-OSS 120b** | Open source model by OpenAI, hosted on Groq |
+| `chat-gemini-2.5-flash-lite` | **Gemini 2.5 Flash-Lite** (Default) | Fastest and most cost-efficient, optimized for high-volume tasks |
+| `chat-gemini-2.5-flash` | **Gemini 2.5 Flash** | Balanced performance with advanced reasoning and native multimodality |
+| `chat-gemini-3-flash-preview` | **Gemini 3 Flash Preview** | Next-generation model optimized for ultra-fast multimodal performance |
+| `chat-gemini-2.0-flash` | **Gemini 2.0 Flash** | Reliable workhorse model with a huge context window |
+| `chat-gemini-2.5-flash-search` | **Gemini 2.5 Flash + Web Search** | Grounded in Google Search for real-time information retrieval |
+| `chat-model-reasoning` | **Qwen-3 32b** | Advanced reasoning for complex logical tasks |
+| `openai/gpt-oss-20b` | **GPT-OSS 20b** | Optimized open-source model hosted on Groq |
+| `openai/gpt-oss-120b` | **GPT-OSS 120b** | Large-scale open-source model with reasoning middleware |
 
 
 ## Contributing
