@@ -3,6 +3,7 @@
 import { generateText, type Message } from "ai";
 import { cookies } from "next/headers";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { isSelectableChatModelId } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
 import {
 	deleteAllChatsByUserId,
@@ -12,6 +13,9 @@ import {
 } from "@/lib/db/queries";
 
 export async function saveChatModelAsCookie(model: string) {
+	if (!isSelectableChatModelId(model)) {
+		return;
+	}
 	const cookieStore = await cookies();
 	cookieStore.set("chat-model", model);
 }

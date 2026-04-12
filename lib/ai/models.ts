@@ -38,6 +38,18 @@ export const chatModels: Array<ChatModel> = [
 			"Gemini 2.5 Flash with Google Search grounding for real-time information retrieval and enhanced accuracy",
 	},
 	{
+		id: "chat-gemma-4-26b-a4b-it",
+		name: "Gemma 4 26b A4B IT",
+		description:
+			"Gemma 4 26b A4B IT is a large language model that is trained on a large dataset of text and code.",
+	},
+	{
+		id: "chat-gemma-4-31b-it",
+		name: "Gemma 4 31b IT",
+		description:
+			"Gemma 4 31b IT is a large language model that is trained on a large dataset of text and code.",
+	},
+	{
 		id: "chat-model-reasoning",
 		name: "Qwen-3 32b",
 		description: "Uses advanced reasoning and thinking for complex tasks",
@@ -53,3 +65,9 @@ export const chatModels: Array<ChatModel> = [
 		description: "Open source model by OpenAI, hosted on Groq",
 	},
 ];
+
+const selectableModelIds = new Set(chatModels.map((m) => m.id));
+
+export function isSelectableChatModelId(id: string): boolean {
+	return selectableModelIds.has(id);
+}

@@ -6,8 +6,10 @@ import {
 	type UIMessage,
 } from "ai";
 import { auth } from "@/app/(auth)/auth";
+import { isSelectableChatModelId } from "@/lib/ai/models";
 import { systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
+import { chatPostBodySchema } from "@/lib/api/chat-post-body";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
 	deleteChatById,
@@ -26,15 +28,25 @@ export const maxDuration = 60;
 
 export async function POST(request: Request) {
 	try {
-		const {
-			id,
-			messages,
-			selectedChatModel,
-		}: {
-			id: string;
-			messages: Array<UIMessage>;
-			selectedChatModel: string;
-		} = await request.json();
+		let json: unknown;
+		try {
+			json = await request.json();
+		} catch {
+			return new Response("Invalid JSON body", { status: 400 });
+		}
+
+		const parsed = chatPostBodySchema.safeParse(json);
+		if (!parsed.success) {
+			return new Response("Invalid request body", { status: 400 });
+		}
+
+		const { id, messages, selectedChatModel } = parsed.data;
+
+		if (!isSelectableChatModelId(selectedChatModel)) {
+			return new Response("Unsupported chat model", { status: 400 });
+		}
+
+		const uiMessages = messages as Array<UIMessage>;
 
 		const session = await auth();
 
@@ -42,7 +54,7 @@ export async function POST(request: Request) {
 			return new Response("Unauthorized", { status: 401 });
 		}
 
-		const userMessage = getMostRecentUserMessage(messages);
+		const userMessage = getMostRecentUserMessage(uiMessages);
 
 		if (!userMessage) {
 			return new Response("No user message found", { status: 400 });
@@ -82,7 +94,7 @@ export async function POST(request: Request) {
 
 		return createDataStreamResponse({
 			execute: (dataStream) => {
-				const hasAttachment = messages.some(
+				const hasAttachment = uiMessages.some(
 					(msg) =>
 						msg.experimental_attachments &&
 						msg.experimental_attachments.length > 0,
@@ -93,7 +105,7 @@ export async function POST(request: Request) {
 					system: hasAttachment
 						? undefined
 						: systemPrompt({ selectedChatModel }),
-					messages,
+					messages: uiMessages,
 					maxSteps: 5,
 					experimental_transform: smoothStream({ chunking: "word" }),
 					experimental_generateMessageId: generateUUID,
@@ -175,6 +187,10 @@ export async function DELETE(request: Request) {
 
 	try {
 		const chat = await getChatById({ id });
+
+		if (!chat) {
+			return new Response("Not Found", { status: 404 });
+		}
 
 		if (chat.userId !== session.user.id) {
 			return new Response("Unauthorized", { status: 401 });

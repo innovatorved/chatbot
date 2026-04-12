@@ -26,6 +26,8 @@ export const myProvider = customProvider({
 			middleware: extractReasoningMiddleware({ tagName: "think" }),
 		}),
 		"title-model": google("gemini-2.5-flash-lite"),
+		"chat-gemma-4-26b-a4b-it": google("gemma-4-26b-a4b-it"),
+		"chat-gemma-4-31b-it": google("gemma-4-31b-it"),
 		"openai/gpt-oss-20b": groq("openai/gpt-oss-20b"),
 		"openai/gpt-oss-120b": wrapLanguageModel({
 			model: groq("openai/gpt-oss-120b"),

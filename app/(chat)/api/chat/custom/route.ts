@@ -5,7 +5,9 @@ import {
 	type UIMessage,
 } from "ai";
 import { auth } from "@/app/(auth)/auth";
+import { isSelectableChatModelId } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
+import { chatPostBodySchema } from "@/lib/api/chat-post-body";
 import { isProductionEnvironment } from "@/lib/constants";
 import { generateUUID, getMostRecentUserMessage } from "@/lib/utils";
 
@@ -13,15 +15,25 @@ export const maxDuration = 60;
 
 export async function POST(request: Request) {
 	try {
-		const {
-			id,
-			messages,
-			selectedChatModel,
-		}: {
-			id: string;
-			messages: Array<UIMessage>;
-			selectedChatModel: string;
-		} = await request.json();
+		let json: unknown;
+		try {
+			json = await request.json();
+		} catch {
+			return new Response("Invalid JSON body", { status: 400 });
+		}
+
+		const parsed = chatPostBodySchema.safeParse(json);
+		if (!parsed.success) {
+			return new Response("Invalid request body", { status: 400 });
+		}
+
+		const { id, messages, selectedChatModel } = parsed.data;
+
+		if (!isSelectableChatModelId(selectedChatModel)) {
+			return new Response("Unsupported chat model", { status: 400 });
+		}
+
+		const uiMessages = messages as Array<UIMessage>;
 
 		const session = await auth();
 
@@ -29,7 +41,7 @@ export async function POST(request: Request) {
 			return new Response("Unauthorized", { status: 401 });
 		}
 
-		const userMessage = getMostRecentUserMessage(messages);
+		const userMessage = getMostRecentUserMessage(uiMessages);
 
 		if (!userMessage) {
 			return new Response("No user message found", { status: 400 });
@@ -39,7 +51,7 @@ export async function POST(request: Request) {
 			execute: (dataStream) => {
 				const result = streamText({
 					model: myProvider.languageModel(selectedChatModel),
-					messages,
+					messages: uiMessages,
 					maxSteps: 5,
 					system:
 						id === "draft-emails"
@@ -56,14 +68,21 @@ export async function POST(request: Request) {
 					},
 				});
 
+				result.consumeStream();
+
 				result.mergeIntoDataStream(dataStream, {
 					sendReasoning: true,
 				});
 			},
+			onError: (error) => {
+				console.error("Custom chat API Error:", error);
+				return "An unexpected error occurred during the chat stream. Please try again.";
+			},
 		});
-	} catch (_error) {
-		return new Response("An error occurred while processing your request!", {
-			status: 404,
+	} catch (error) {
+		console.error("POST /api/chat/custom error:", error);
+		return new Response("An error occurred while processing your request.", {
+			status: 500,
 		});
 	}
 }

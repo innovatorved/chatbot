@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun --bun next dev",
-		"build": "tsx lib/db/migrate && bun --bun next build",
+		"build": "bun --bun next build",
+		"build:with-migrate": "tsx lib/db/migrate.ts && bun --bun next build",
 		"start": "bun --bun next start",
 		"lint": "bun x @biomejs/biome check",
 		"fix": "bun x @biomejs/biome check --write",
