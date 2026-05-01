@@ -15,6 +15,13 @@
 			"when": 1762010963706,
 			"tag": "0001_loud_mysterio",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1777663289674,
+			"tag": "0002_broad_warstar",
+			"breakpoints": true
 		}
 	]
 }

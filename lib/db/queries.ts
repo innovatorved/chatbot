@@ -34,6 +34,26 @@ export async function getUser(email: string): Promise<Array<User>> {
 	);
 }
 
+export async function getUserById(id: string): Promise<User | undefined> {
+	return withErrorHandling(async () => {
+		const [row] = await db.select().from(user).where(eq(user.id, id));
+		return row;
+	}, "Failed to get user by id from database");
+}
+
+export async function updateUserInstructions({
+	id,
+	customInstructions,
+}: {
+	id: string;
+	customInstructions: string | null;
+}) {
+	return withErrorHandling(
+		() => db.update(user).set({ customInstructions }).where(eq(user.id, id)),
+		"Failed to update user instructions in database",
+	);
+}
+
 export async function createUser(email: string, password: string) {
 	const salt = genSaltSync(10);
 	const hash = hashSync(password, salt);
@@ -80,8 +100,27 @@ export async function getChatsByUserId({ id }: { id: string }) {
 				.select()
 				.from(chat)
 				.where(eq(chat.userId, id))
-				.orderBy(desc(chat.createdAt)),
+				.orderBy(desc(chat.isPinned), desc(chat.createdAt)),
 		"Failed to get chats by user from database",
+	);
+}
+
+export async function setChatPinned({
+	chatId,
+	userId,
+	isPinned,
+}: {
+	chatId: string;
+	userId: string;
+	isPinned: boolean;
+}) {
+	return withErrorHandling(
+		() =>
+			db
+				.update(chat)
+				.set({ isPinned })
+				.where(and(eq(chat.id, chatId), eq(chat.userId, userId))),
+		"Failed to update chat pin state in database",
 	);
 }
 

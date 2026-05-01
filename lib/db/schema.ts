@@ -14,6 +14,7 @@ export const user = pgTable("User", {
 	id: uuid("id").primaryKey().notNull().defaultRandom(),
 	email: varchar("email", { length: 64 }).notNull(),
 	password: varchar("password", { length: 64 }),
+	customInstructions: text("customInstructions"),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -28,6 +29,7 @@ export const chat = pgTable("Chat", {
 	visibility: varchar("visibility", { enum: ["public", "private"] })
 		.notNull()
 		.default("private"),
+	isPinned: boolean("isPinned").notNull().default(false),
 });
 
 export type Chat = InferSelectModel<typeof chat>;

@@ -14,6 +14,7 @@ import { isProductionEnvironment } from "@/lib/constants";
 import {
 	deleteChatById,
 	getChatById,
+	getUserById,
 	saveChat,
 	saveMessages,
 } from "@/lib/db/queries";
@@ -60,6 +61,9 @@ export async function POST(request: Request) {
 			return new Response("No user message found", { status: 400 });
 		}
 
+		const dbUser = await getUserById(session.user.id);
+		const customInstructions = dbUser?.customInstructions ?? null;
+
 		const chat = await getChatById({ id });
 
 		if (!chat) {
@@ -104,7 +108,7 @@ export async function POST(request: Request) {
 					model: myProvider.languageModel(selectedChatModel),
 					system: hasAttachment
 						? undefined
-						: systemPrompt({ selectedChatModel }),
+						: systemPrompt({ selectedChatModel, customInstructions }),
 					messages: uiMessages,
 					maxSteps: 5,
 					experimental_transform: smoothStream({ chunking: "word" }),

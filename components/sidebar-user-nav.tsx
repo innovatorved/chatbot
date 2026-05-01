@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { clearChatHistory } from "@/app/(chat)/actions";
 
+import { CustomizeDialog } from "@/components/customize-dialog";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -38,6 +39,7 @@ export function SidebarUserNav({ user }: { user: User }) {
 	const router = useRouter();
 	const [isClearing, setIsClearing] = useState(false);
 	const [showClearDialog, setShowClearDialog] = useState(false);
+	const [showCustomizeDialog, setShowCustomizeDialog] = useState(false);
 
 	const handleClearHistory = async () => {
 		if (!user?.id) return;
@@ -88,6 +90,13 @@ export function SidebarUserNav({ user }: { user: User }) {
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								className="cursor-pointer"
+								onSelect={() => setShowCustomizeDialog(true)}
+							>
+								Customize
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="cursor-pointer"
 								onSelect={() => setShowClearDialog(true)}
 								disabled={isClearing}
 							>
@@ -111,6 +120,11 @@ export function SidebarUserNav({ user }: { user: User }) {
 					</DropdownMenu>
 				</SidebarMenuItem>
 			</SidebarMenu>
+
+			<CustomizeDialog
+				open={showCustomizeDialog}
+				onOpenChange={setShowCustomizeDialog}
+			/>
 
 			<AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
 				<AlertDialogContent>

@@ -1,10 +1,11 @@
 "use client";
 
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
+import { Search, Star, StarOff } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import type { User } from "next-auth";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 
@@ -36,6 +37,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
 	SidebarGroup,
 	SidebarGroupContent,
@@ -61,20 +63,25 @@ const BaseChatItem = ({
 	chat,
 	isActive,
 	onDelete,
+	onPinToggle,
 	setOpenMobile,
 	enableDelete = true,
 	enableShare = true,
+	enablePin = false,
 }: {
 	chat: {
 		id: string;
 		title: string;
 		visibility?: "private" | "public";
+		isPinned?: boolean;
 	};
 	isActive: boolean;
 	onDelete?: (chatId: string) => void;
+	onPinToggle?: (chatId: string, nextPinned: boolean) => void;
 	setOpenMobile: (open: boolean) => void;
 	enableDelete?: boolean;
 	enableShare?: boolean;
+	enablePin?: boolean;
 }) => {
 	const { visibilityType, setVisibilityType } = useChatVisibility({
 		chatId: chat.id,
@@ -101,6 +108,25 @@ const BaseChatItem = ({
 				</DropdownMenuTrigger>
 
 				<DropdownMenuContent side="bottom" align="end">
+					{enablePin && onPinToggle && (
+						<DropdownMenuItem
+							className="cursor-pointer"
+							onSelect={() => onPinToggle(chat.id, !chat.isPinned)}
+						>
+							{chat.isPinned ? (
+								<>
+									<StarOff className="size-3" />
+									<span>Unpin</span>
+								</>
+							) : (
+								<>
+									<Star className="size-3" />
+									<span>Pin</span>
+								</>
+							)}
+						</DropdownMenuItem>
+					)}
+
 					{enableShare && (
 						<DropdownMenuSub>
 							<DropdownMenuSubTrigger className="cursor-pointer">
@@ -157,18 +183,22 @@ const PureChatItem = ({
 	chat,
 	isActive,
 	onDelete,
+	onPinToggle,
 	setOpenMobile,
 }: {
 	chat: Chat;
 	isActive: boolean;
 	onDelete: (chatId: string) => void;
+	onPinToggle: (chatId: string, nextPinned: boolean) => void;
 	setOpenMobile: (open: boolean) => void;
 }) => (
 	<BaseChatItem
 		chat={chat}
 		isActive={isActive}
 		onDelete={onDelete}
+		onPinToggle={onPinToggle}
 		setOpenMobile={setOpenMobile}
+		enablePin
 	/>
 );
 
@@ -200,6 +230,8 @@ export const CustomChatItem = memo(UnPureChatItem, (prevProps, nextProps) => {
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
 	if (prevProps.isActive !== nextProps.isActive) return false;
+	if (prevProps.chat.isPinned !== nextProps.chat.isPinned) return false;
+	if (prevProps.chat.title !== nextProps.chat.title) return false;
 	return true;
 });
 
@@ -219,7 +251,56 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [query, setQuery] = useState("");
 	const router = useRouter();
+
+	const trimmedQuery = query.trim().toLowerCase();
+	const isSearching = trimmedQuery.length > 0;
+
+	const filteredHistory = useMemo(() => {
+		if (!history) return [];
+		if (!isSearching) return history;
+		return history.filter((c) => c.title.toLowerCase().includes(trimmedQuery));
+	}, [history, isSearching, trimmedQuery]);
+
+	const pinnedChats = useMemo(
+		() => (history ?? []).filter((c) => c.isPinned),
+		[history],
+	);
+
+	const handlePinToggle = async (chatId: string, nextPinned: boolean) => {
+		mutate(
+			(current) =>
+				current?.map((c) =>
+					c.id === chatId ? { ...c, isPinned: nextPinned } : c,
+				),
+			{ revalidate: false },
+		);
+
+		try {
+			const response = await fetch("/api/chat/pin", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ chatId, isPinned: nextPinned }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update pin state");
+			}
+			void mutate();
+		} catch (error) {
+			console.error(error);
+			toast.error("Failed to update pin state");
+			mutate(
+				(current) =>
+					current?.map((c) =>
+						c.id === chatId ? { ...c, isPinned: !nextPinned } : c,
+					),
+				{ revalidate: false },
+			);
+		}
+	};
+
 	const handleDelete = async () => {
 		const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
 			method: "DELETE",
@@ -268,9 +349,25 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 		},
 	];
 
+	const searchBox = (
+		<div className="px-2 pb-1">
+			<div className="relative">
+				<Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+				<Input
+					value={query}
+					onChange={(event) => setQuery(event.target.value)}
+					placeholder="Search chats..."
+					aria-label="Search chats"
+					className="h-8 pl-7 text-sm bg-sidebar-accent/40 border-transparent focus-visible:ring-1"
+				/>
+			</div>
+		</div>
+	);
+
 	if (isLoading) {
 		return (
 			<SidebarGroup>
+				{searchBox}
 				<div className="px-2 py-1 text-xs text-sidebar-foreground/50">
 					Today
 				</div>
@@ -300,6 +397,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 	if (history?.length === 0) {
 		return (
 			<SidebarGroup>
+				{searchBox}
 				<SidebarGroupContent>
 					<SidebarMenu>
 						<div className="px-2 py-1 text-xs text-sidebar-foreground/50">
@@ -355,19 +453,49 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 		);
 	};
 
+	const onDeleteChat = (chatId: string) => {
+		setDeleteId(chatId);
+		setShowDeleteDialog(true);
+	};
+
 	return (
 		<>
 			<SidebarGroup>
+				{searchBox}
 				<SidebarGroupContent>
 					<SidebarMenu>
-						{history &&
+						{isSearching ? (
+							<>
+								<div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+									Results ({filteredHistory.length})
+								</div>
+								{filteredHistory.length === 0 ? (
+									<div className="px-2 py-3 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+										No matching chats
+									</div>
+								) : (
+									filteredHistory.map((chat) => (
+										<ChatItem
+											key={chat.id}
+											chat={chat}
+											isActive={chat.id === id}
+											onDelete={onDeleteChat}
+											onPinToggle={handlePinToggle}
+											setOpenMobile={setOpenMobile}
+										/>
+									))
+								)}
+							</>
+						) : (
+							history &&
 							(() => {
-								const groupedChats = groupChatsByDate(history);
+								const unpinned = history.filter((c) => !c.isPinned);
+								const groupedChats = groupChatsByDate(unpinned);
 
 								return (
 									<>
 										<div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-											Customer Modules
+											Custom Modules
 										</div>
 										{customChats.map((chat) => (
 											<CustomChatItem
@@ -377,9 +505,28 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 												setOpenMobile={setOpenMobile}
 											/>
 										))}
+
+										{pinnedChats.length > 0 && (
+											<>
+												<div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
+													Pinned
+												</div>
+												{pinnedChats.map((chat) => (
+													<ChatItem
+														key={chat.id}
+														chat={chat}
+														isActive={chat.id === id}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
+														setOpenMobile={setOpenMobile}
+													/>
+												))}
+											</>
+										)}
+
 										{groupedChats.today.length > 0 && (
 											<>
-												<div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+												<div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
 													Today
 												</div>
 												{groupedChats.today.map((chat) => (
@@ -387,10 +534,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 														key={chat.id}
 														chat={chat}
 														isActive={chat.id === id}
-														onDelete={(chatId) => {
-															setDeleteId(chatId);
-															setShowDeleteDialog(true);
-														}}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
 														setOpenMobile={setOpenMobile}
 													/>
 												))}
@@ -407,10 +552,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 														key={chat.id}
 														chat={chat}
 														isActive={chat.id === id}
-														onDelete={(chatId) => {
-															setDeleteId(chatId);
-															setShowDeleteDialog(true);
-														}}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
 														setOpenMobile={setOpenMobile}
 													/>
 												))}
@@ -427,10 +570,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 														key={chat.id}
 														chat={chat}
 														isActive={chat.id === id}
-														onDelete={(chatId) => {
-															setDeleteId(chatId);
-															setShowDeleteDialog(true);
-														}}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
 														setOpenMobile={setOpenMobile}
 													/>
 												))}
@@ -447,10 +588,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 														key={chat.id}
 														chat={chat}
 														isActive={chat.id === id}
-														onDelete={(chatId) => {
-															setDeleteId(chatId);
-															setShowDeleteDialog(true);
-														}}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
 														setOpenMobile={setOpenMobile}
 													/>
 												))}
@@ -467,10 +606,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 														key={chat.id}
 														chat={chat}
 														isActive={chat.id === id}
-														onDelete={(chatId) => {
-															setDeleteId(chatId);
-															setShowDeleteDialog(true);
-														}}
+														onDelete={onDeleteChat}
+														onPinToggle={handlePinToggle}
 														setOpenMobile={setOpenMobile}
 													/>
 												))}
@@ -478,7 +615,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 										)}
 									</>
 								);
-							})()}
+							})()
+						)}
 					</SidebarMenu>
 				</SidebarGroupContent>
 			</SidebarGroup>

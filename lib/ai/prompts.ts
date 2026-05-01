@@ -3,12 +3,19 @@ export const regularPrompt =
 
 export const systemPrompt = ({
 	selectedChatModel,
+	customInstructions,
 }: {
 	selectedChatModel: string;
+	customInstructions?: string | null;
 }) => {
+	const trimmed = customInstructions?.trim() ?? "";
+	const memory =
+		trimmed.length > 0
+			? `\n\nUser preferences (always follow when reasonable):\n${trimmed}`
+			: "";
+
 	if (selectedChatModel === "chat-model-reasoning") {
-		return regularPrompt;
-	} else {
-		return `${regularPrompt}\n`;
+		return regularPrompt + memory;
 	}
+	return `${regularPrompt}\n${memory}`;
 };

@@ -3,6 +3,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { Attachment, UIMessage } from "ai";
 import equal from "fast-deep-equal";
+import { Mic, MicOff } from "lucide-react";
 import type React from "react";
 import {
 	type ChangeEvent,
@@ -27,6 +28,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { chatModels } from "@/lib/ai/models";
 import { cn } from "@/lib/utils";
 import { ArrowUpIcon, ChevronDownIcon, PaperclipIcon, StopIcon } from "./icons";
@@ -180,6 +182,19 @@ function PureMultimodalInput({
 		adjustHeight();
 	};
 
+	const appendTranscript = useCallback(
+		(text: string) => {
+			setInput((prev) => {
+				const separator = prev.length > 0 && !prev.endsWith(" ") ? " " : "";
+				return prev + separator + text;
+			});
+			requestAnimationFrame(() => adjustHeight());
+		},
+		[setInput, adjustHeight],
+	);
+
+	const speech = useSpeechRecognition({ onTranscript: appendTranscript });
+
 	const submitForm = useCallback(() => {
 		window.history.replaceState({}, "", `/chat/${chatId}`);
 
@@ -275,6 +290,7 @@ function PureMultimodalInput({
 					className={cn(
 						messages.length === 0 ? "min-h-[120px]" : "min-h-[52px]",
 						"max-h-[calc(75dvh)] overflow-hidden resize-none rounded-3xl text-base bg-muted pl-12 pr-24 py-3.5 border-2 border-border transition-colors",
+						speech.isSupported && "pl-20",
 						className,
 					)}
 					rows={messages.length === 0 ? 3 : 1}
@@ -298,9 +314,16 @@ function PureMultimodalInput({
 					}}
 				/>
 
-				{/* Left side - Attachment button */}
-				<div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center">
+				{/* Left side - Attachment + Mic buttons */}
+				<div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
 					<AttachmentsButton fileInputRef={fileInputRef} status={status} />
+					{speech.isSupported && (
+						<MicButton
+							isListening={speech.isListening}
+							onToggle={speech.toggle}
+							status={status}
+						/>
+					)}
 				</div>
 
 				{/* Right side - Model selector and Send button */}
@@ -357,6 +380,40 @@ function PureAttachmentsButton({
 }
 
 const AttachmentsButton = memo(PureAttachmentsButton);
+
+function PureMicButton({
+	isListening,
+	onToggle,
+	status,
+}: {
+	isListening: boolean;
+	onToggle: () => void;
+	status: UseChatHelpers["status"];
+}) {
+	return (
+		<Button
+			data-testid="mic-button"
+			className={cn(
+				"h-8 w-8 p-0 rounded-lg transition-colors",
+				isListening
+					? "bg-destructive/15 text-destructive hover:bg-destructive/20 animate-pulse"
+					: "hover:bg-accent text-muted-foreground hover:text-foreground",
+			)}
+			onClick={(event) => {
+				event.preventDefault();
+				onToggle();
+			}}
+			disabled={status !== "ready" && !isListening}
+			variant="ghost"
+			size="sm"
+			aria-label={isListening ? "Stop voice input" : "Start voice input"}
+		>
+			{isListening ? <MicOff size={18} /> : <Mic size={18} />}
+		</Button>
+	);
+}
+
+const MicButton = memo(PureMicButton);
 
 function PureStopButton({
 	stop,

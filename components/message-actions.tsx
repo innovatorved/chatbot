@@ -1,10 +1,15 @@
 import type { Message } from "ai";
 import equal from "fast-deep-equal";
+import { Square, Volume2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
+import {
+	stripMarkdown,
+	useSpeechSynthesis,
+} from "@/hooks/use-speech-synthesis";
 import type { Vote } from "@/lib/db/schema";
 import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
 import { Button } from "./ui/button";
@@ -81,6 +86,7 @@ export function PureMessageActions({
 }) {
 	const { mutate } = useSWRConfig();
 	const [_, copyToClipboard] = useCopyToClipboard();
+	const speech = useSpeechSynthesis();
 
 	if (isLoading) return null;
 
@@ -94,6 +100,19 @@ export function PureMessageActions({
 
 		await copyToClipboard(textFromParts);
 		toast.success("Copied to clipboard!");
+	};
+
+	const handleSpeak = () => {
+		if (speech.isSpeaking) {
+			speech.cancel();
+			return;
+		}
+		const textFromParts = getTextFromMessage(message);
+		if (!textFromParts) {
+			toast.error("There's no text to read aloud!");
+			return;
+		}
+		speech.speak(stripMarkdown(textFromParts));
 	};
 
 	// User message actions
@@ -136,6 +155,31 @@ export function PureMessageActions({
 					</TooltipTrigger>
 					<TooltipContent>Copy</TooltipContent>
 				</Tooltip>
+
+				{speech.isSupported && (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								data-testid="message-speak"
+								className="py-1 px-2 h-fit text-muted-foreground"
+								variant="ghost"
+								onClick={handleSpeak}
+								aria-label={
+									speech.isSpeaking ? "Stop reading aloud" : "Read aloud"
+								}
+							>
+								{speech.isSpeaking ? (
+									<Square size={14} />
+								) : (
+									<Volume2 size={14} />
+								)}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{speech.isSpeaking ? "Stop" : "Read aloud"}
+						</TooltipContent>
+					</Tooltip>
+				)}
 
 				<Tooltip>
 					<TooltipTrigger asChild>
