@@ -143,7 +143,6 @@ export function Chat(props: ChatProps) {
 				chatId={id}
 				status={status}
 				votes={votes ?? []}
-				// @ts-expect-error
 				messages={messages}
 				setMessages={setMessages}
 				reload={reload}
@@ -164,7 +163,6 @@ export function Chat(props: ChatProps) {
 						stop={stop}
 						attachments={attachments}
 						setAttachments={setAttachments}
-						// @ts-expect-error
 						messages={messages}
 						setMessages={setMessages}
 						append={append}
